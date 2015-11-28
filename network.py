@@ -18,9 +18,6 @@ class DriveCoinServerProtocol(protocol.Protocol):
 	def connectionMade(self):
 		self.peers.add(self.transport.getPeer().host)
 
-	def _command_format(message):
-		return "_______****_______"+message+"_______****_______"
-
 	def dataReceived(self, data):
 		# Strip new lines
 		data=data.strip()
@@ -39,14 +36,6 @@ class DriveCoinClient():
 	'Broadcasts outgoing requests to peers'
 
 	SEED_PEER = '127.0.0.1'
-
-	# DriveCoinClient is a singleton
-	_instance = None
-	def __new__(cls, *args, **kwargs):
-		if not cls._instance:
-			cls._instance = super(Singleton, cls).__new__(
-				cls, *args, **kwargs)
-		return cls._instance
 
 	def __init__(self):
 		# Bootstrap peers from a seed peer
@@ -87,14 +76,6 @@ class DriveCoinClient():
 @Singleton
 class DriveCoinNetwork:
 	'Runs a server on TCP port 8123 implementing the DriveCoinServerProtocol'
-
-	# DriveCoinNetwork is a singleton
-	_instance = None
-	def __new__(cls, *args, **kwargs):
-		if not cls._instance:
-			cls._instance = super(Singleton, cls).__new__(
-				cls, *args, **kwargs)
-		return cls._instance
 
 	def __init__(self):
 		factory = protocol.ServerFactory()
