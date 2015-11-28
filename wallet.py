@@ -15,32 +15,42 @@ def interactive_wallet():
 	except None:
 		print "ERROR: Failed to connect to DriveCoin seed peer"
 		server.stop()
-		return
 
-	def menu():
+	def menu(items, item_values):
 		response = None
-		possible_responses = {'1': create_wallet, '2': select_wallet, '3':check_balance, '4': send_money}
+		possible_responses = {}
+		menu_list = ''
+		for index, item in enumerate(items):	
+			possible_responses[str(index+1)] = item_values[index]
+			menu_list += " \n\t"+str(index+1)+") "+item
 		seperator = "\n========================================\n"
 		while response not in possible_responses:
 			if type(response) == str:
 				print "Invalid Choice!"
-			response = raw_input("\n"+seperator+"Select an option: \n\t1) Create Wallet \n\t2) Select Wallet \n\t3) Check Balance \n\t4) Send Money"+seperator)
+			response = raw_input("\n"+seperator+"Select an option:"+menu_list+seperator)
 		return possible_responses[response]
 
+	def main_menu():
+		choice =  menu(["Create Wallet", "Select Wallet", "Check Balance", "Send Money", "Exit App"],
+						[create_wallet, select_wallet, check_balance, send_money, exit_app])
+		choice()
+
 	def create_wallet():
-		pass
+		main_menu()
 
 	def select_wallet():
-		pass
+		main_menu()
 
 	def check_balance():
-		pass
+		main_menu()
 
 	def send_money():
-		pass
+		main_menu()
 
-	menu()
-	print client.peers
+	def exit_app():
+		server.stop()
+		
+	main_menu()
 
 
 def main():

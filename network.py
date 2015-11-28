@@ -1,7 +1,12 @@
 from twisted.internet import reactor, protocol
+from twisted.internet.defer import DebugInfo
 import telnetlib
 import random
 from singleton import Singleton
+import os
+import sys
+import signal
+
 
 class DriveCoinServerProtocol(protocol.Protocol):
 	'Manages DriveCoin incoming requests from peers'
@@ -17,8 +22,10 @@ class DriveCoinServerProtocol(protocol.Protocol):
 	def dataReceived(self, data):
 		# Strip new lines
 		data=data.strip()
-		getattr(self, 'do_'+data)()
+		getattr(self, 'do_'+data, 'do_nop')()
 
+	def do_nop(self):
+		pass
 
 	def do_peers(self):
 		for peer in self.peers:
@@ -100,3 +107,4 @@ class DriveCoinNetwork:
 
 	def stop(self):
 		reactor.stop()
+		os.kill(os.getpid(), signal.SIGKILL)
