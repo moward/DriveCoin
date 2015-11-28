@@ -7,6 +7,8 @@ import os
 import sys
 import signal
 
+SEED_PEER = '127.0.0.1'
+DRIVECOIN_PORT = 8123
 
 class DriveCoinServerProtocol(protocol.Protocol):
 	'Manages DriveCoin incoming requests from peers'
@@ -48,7 +50,7 @@ class DriveCoinClient():
 
 	def __init__(self):
 		# Bootstrap peers from a seed peer
-		self.tn = telnetlib.Telnet(self.SEED_PEER, 8123)
+		self.tn = telnetlib.Telnet(self.SEED_PEER, DRIVECOIN_PORT)
 		peer_ips =  self._parse_telnet_array_response(self.telnet_seed_command('peers').split())
 		self.peers = list(set(peer_ips))
 
@@ -59,7 +61,7 @@ class DriveCoinClient():
 
 	def telnet_seed_command(self, command):
 		self.tn.close()
-		self.tn = telnetlib.Telnet(self.SEED_PEER, 8123)
+		self.tn = telnetlib.Telnet(self.SEED_PEER, DRIVECOIN_PORT)
 		self.tn.write(command+"\n")
 		return self.telnet_read_until('end-'+command)
 
@@ -70,7 +72,7 @@ class DriveCoinClient():
 				error = False
 				random_peer = random.choice(self.peers)
 				self.tn.close()
-				self.tn = telnetlib.Telnet(random_peer, 8123)
+				self.tn = telnetlib.Telnet(random_peer, DRIVECOIN_PORT)
 				self.tn.write(command+"\n")
 				break
 			except:
@@ -97,7 +99,7 @@ class DriveCoinNetwork:
 	def __init__(self):
 		factory = protocol.ServerFactory()
 		factory.protocol = DriveCoinServerProtocol
-		reactor.listenTCP(8123,factory)
+		reactor.listenTCP(DRIVECOIN_PORT,factory)
 
 	def attach_routine(self, routine):
 		reactor.callInThread(routine)
