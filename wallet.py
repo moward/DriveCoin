@@ -12,7 +12,7 @@ def interactive_wallet():
 
 	try: 
 		client = DriveCoinClient.Instance()
-	except:
+	except None:
 		print "ERROR: Failed to connect to DriveCoin seed peer"
 		server.stop()
 		return

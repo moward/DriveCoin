@@ -29,6 +29,8 @@ class DriveCoinServerProtocol(protocol.Protocol):
 class DriveCoinClient():
 	'Broadcasts outgoing requests to peers'
 
+	SEED_PEER = '127.0.0.1'
+
 	# DriveCoinClient is a singleton
 	_instance = None
 	def __new__(cls, *args, **kwargs):
@@ -38,11 +40,9 @@ class DriveCoinClient():
 		return cls._instance
 
 	def __init__(self):
-		SEED_PEER = '127.0.0.1'
-		self.tn = telnetlib.Telnet(SEED_PEER, 8123)
-
 		# Bootstrap peers from a seed peer
-		peer_ips =  self._parse_telnet_array_response(self.telnet_command('peers').split())
+		self.tn = telnetlib.Telnet(self.SEED_PEER, 8123)
+		peer_ips =  self._parse_telnet_array_response(self.telnet_seed_command('peers').split())
 		self.peers = list(set(peer_ips))
 
 	def telnet_read_until(self, msg):
@@ -50,19 +50,34 @@ class DriveCoinClient():
 			raise IOError
 		return self.tn.read_until(msg)[:-len(msg)]
 
-	def telnet_command(self, command):
+	def telnet_seed_command(self, command):
+		self.tn.close()
+		self.tn = telnetlib.Telnet(self.SEED_PEER, 8123)
 		self.tn.write(command+"\n")
 		return self.telnet_read_until('end-'+command)
 
 	def telnet_peers_command(command):
-		random_peer = random.choice(self.peers)
+		error = True
+		for i in range(30):
+			try:
+				error = False
+				random_peer = random.choice(self.peers)
+				self.tn.close()
+				self.tn = telnetlib.Telnet(random_peer, 8123)
+				self.tn.write(command+"\n")
+				break
+			except:
+				error = True
+		if error:
+			raise RuntimeError
+		return self.telnet_read_until('end-'+command)
 
 	def _parse_telnet_array_response(self,response):
 		return map(lambda x: x.strip(), response)
 
 @Singleton
 class DriveCoinNetwork:
-	'Runs a server on TCP port 8124 implementing the DriveCoinServerProtocol'
+	'Runs a server on TCP port 8123 implementing the DriveCoinServerProtocol'
 
 	# DriveCoinNetwork is a singleton
 	_instance = None
