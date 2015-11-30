@@ -1,3 +1,4 @@
+from Crypto.PublicKey import RSA
 from network import DriveCoinNetwork
 from network import DriveCoinClient
 import sys
@@ -36,6 +37,8 @@ def interactive_wallet():
 		choice()
 
 	def create_wallet():
+		key = RSA.generate(2048)
+		key.key_data
 		main_menu()
 
 	def select_wallet():
@@ -49,7 +52,7 @@ def interactive_wallet():
 
 	def exit_app():
 		server.stop()
-		
+
 	main_menu()
 
 
