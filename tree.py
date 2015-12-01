@@ -41,7 +41,7 @@ class BSTNode:
   3     | L Child Location        | 8 B
   4     | R Child Location        | 8 B
   '''
-  nodeStruct = struct.Struct('32s32sHll')
+  nodeStruct = struct.Struct('>32s32sHll')
   byteSize = nodeStruct.size
 
   def __init__(self, solnSet, location):
