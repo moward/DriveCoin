@@ -3,12 +3,14 @@
 # Matthew Howard
 # Data handling utils
 
+from Crypto.Random import random
+
 def toHex(input):
   return ''.join(['%0.2X' % ord(c) for c in input])
 
 # xor two strings (trims the longer input)
 def strxor(a, b):
-  return "".join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
+  return ''.join([chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b)])
 
 # inefficient but only used on small integer types in practice (<8 Bytes)
 def intToStr(x, len):
@@ -45,3 +47,6 @@ def parse_mpi(s,index):
     length = struct.unpack('<I',s[index:index+4])[0]
     z = Integer(s[index+4:index+4+length].encode('hex'),16)
     return z, index+4+length
+
+def randomString(n):
+  return ''.join([chr(random.randint(0, 255)) for _ in range(0, n)])
