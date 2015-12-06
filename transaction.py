@@ -8,3 +8,7 @@ class Transaction:
 		self.sender = sender
 		self.recipient = recipient
 		self.reference_transactions = reference_transactions
+
+	def verify(self):
+		#TODO verify the transaction as being a valid RSA signature, and the balance being available
+		pass

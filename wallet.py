@@ -1,6 +1,7 @@
 from Crypto.PublicKey import RSA
 from network import DriveCoinNetwork
 from network import DriveCoinClient
+from blockchain import Blockchain
 import sys
 import shelve
 
@@ -13,9 +14,12 @@ def interactive_wallet():
 
 	try: 
 		client = DriveCoinClient.Instance()
-	except None:
+	except:
 		print "ERROR: Failed to connect to DriveCoin seed peer"
 		server.stop()
+
+	blockchain = Blockchain()
+	server.set_blockchain(blockchain)
 
 	def menu(items, item_values):
 		response = None
