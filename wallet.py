@@ -1,9 +1,11 @@
+import sys
+import shelve
+import Utils
 from Crypto.PublicKey import RSA
 from network import DriveCoinNetwork
 from network import DriveCoinClient
 from blockchain import Blockchain
-import sys
-import shelve
+from transaction import Transaction
 
 def interactive_wallet():
 	store = shelve.open('wallet.store', flag='c', protocol=None, writeback=True)
@@ -41,21 +43,52 @@ def interactive_wallet():
 		choice()
 
 	def create_wallet():
-		key = RSA.generate(2048)
-		key.key_data
+		key = RSA.generate(1024)
+		store['wallets'] = store['wallets']+[(key.n, key.e, key.d, key.p, key.q)]
+		store['current_wallet'] = store['wallets'][-1]
+		print "Created! Your address is:"
+		print Utils.encode_address(key.n)[:-1]
 		main_menu()
 
 	def select_wallet():
+		if len(store['wallets']) > 0:
+			item_values = store['wallets']
+			items = []
+			for wallet in item_values:
+				items.append(Utils.encode_address(wallet[0]))
+			choice =  menu(items, item_values)
+			store['current_wallet'] = choice
+		else:
+			print "You haven't created any wallets yet!"
 		main_menu()
 
 	def check_balance():
-		if blockchain.verified:
-			pass
+		if blockchain.verified and store['current_wallet'] != None:
+			print "Your balance for:"
+			print Utils.encode_address(store["current_wallet"][0])
+			print "is:"
+			balance = blockchain.get_balances().lookup_address(Utils.encode_address(store["current_wallet"][0]))
+			print balance/(10.0**9)
+		elif store['current_wallet'] == None:
+			print "You must select a wallet!"
 		main_menu()
 
 	def send_money():
-		if blockchain.verified:
-			pass
+		if blockchain.verified and store['current_wallet'] != None:
+			amount = "None"
+			if not amount.replace(".","",1).isdigit():
+				amount = raw_input("Enter an amount: ")
+			sender = Utils.encode_address(store["current_wallet"][0])
+			recipient = raw_input("Enter a destination address: ").strip()
+			amount = int(float(amount.strip())*(10**9))
+			transaction = Transaction(sender, recipient, amount)
+			transaction.sign(store['current_wallet'])
+			if transaction.verify(blockchain.get_balances()):
+				print "Success, the money was sent! There will be a delay in confirmation until the transaction is added to the blockchain by a miner."
+			else:
+				print "Your balances are not enough to cover this transaction!"
+		elif store['current_wallet'] == None:
+			print "You must select a wallet!"
 		main_menu()
 
 	def exit_app():

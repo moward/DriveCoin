@@ -1,3 +1,6 @@
+import base64
+import struct
+
 # CIS 556 HW 3
 # Fall 2015
 # Matthew Howard
@@ -24,10 +27,13 @@ def strToInt(s):
     return ord(s[-1]) + 256 * strToInt(s[:-1])
 
 def string_to_long(s):
-	return int(s.encode('hex'), 16)
+	try:
+		return long(s, 16)
+	except:
+		return long(0)
 
 def long_to_string(l):
-	return hex(l)[2:].decode('hex')
+	return hex(l)[2:]
 
 # Our "MPI" format consists of 4-byte integer length l followed by l bytes of binary key
 def int_to_mpi(z):
@@ -43,5 +49,15 @@ def int_to_binary(z):
 # Returns value and index + bytes read.
 def parse_mpi(s,index):
     length = struct.unpack('<I',s[index:index+4])[0]
-    z = Integer(s[index+4:index+4+length].encode('hex'),16)
+    z = int(s[index+4:index+4+length].encode('hex'),16)
     return z, index+4+length
+
+
+def encode_address(n):
+	return long_to_string(n).upper()
+
+def decode_address(address):
+	n = string_to_long(address)
+	e = long(65537)
+	return (n, e)
+
