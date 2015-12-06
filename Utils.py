@@ -64,3 +64,17 @@ def decode_address(address):
 
 def randomString(n):
   return ''.join([chr(random.randint(0, 255)) for _ in range(0, n)])
+
+def menu(items, item_values):
+	response = None
+	possible_responses = {}
+	menu_list = ''
+	for index, item in enumerate(items):	
+		possible_responses[str(index+1)] = item_values[index]
+		menu_list += " \n\t"+str(index+1)+") "+item
+	seperator = "\n========================================\n"
+	while response not in possible_responses:
+		if type(response) == str:
+			print "Invalid Choice!"
+		response = raw_input("\n"+seperator+"Select an option:"+menu_list+seperator)
+	return possible_responses[response]

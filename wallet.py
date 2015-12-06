@@ -23,22 +23,8 @@ def interactive_wallet():
 	blockchain = Blockchain()
 	server.set_blockchain(blockchain)
 
-	def menu(items, item_values):
-		response = None
-		possible_responses = {}
-		menu_list = ''
-		for index, item in enumerate(items):	
-			possible_responses[str(index+1)] = item_values[index]
-			menu_list += " \n\t"+str(index+1)+") "+item
-		seperator = "\n========================================\n"
-		while response not in possible_responses:
-			if type(response) == str:
-				print "Invalid Choice!"
-			response = raw_input("\n"+seperator+"Select an option:"+menu_list+seperator)
-		return possible_responses[response]
-
 	def main_menu():
-		choice =  menu(["Create Wallet", "Select Wallet", "Check Balance", "Send Money", "Exit App"],
+		choice =  Utils.menu(["Create Wallet", "Select Wallet", "Check Balance", "Send Money", "Exit App"],
 						[create_wallet, select_wallet, check_balance, send_money, exit_app])
 		choice()
 
@@ -56,7 +42,7 @@ def interactive_wallet():
 			items = []
 			for wallet in item_values:
 				items.append(Utils.encode_address(wallet[0]))
-			choice =  menu(items, item_values)
+			choice =  Utils.menu(items, item_values)
 			store['current_wallet'] = choice
 		else:
 			print "You haven't created any wallets yet!"
@@ -71,6 +57,8 @@ def interactive_wallet():
 			print balance/(10.0**9)
 		elif store['current_wallet'] == None:
 			print "You must select a wallet!"
+		else:
+			print "Still verifying the blockchain is updated! Try again later!"
 		main_menu()
 
 	def send_money():
@@ -89,6 +77,9 @@ def interactive_wallet():
 				print "Your balances are not enough to cover this transaction!"
 		elif store['current_wallet'] == None:
 			print "You must select a wallet!"
+		else:
+			print "Still verifying the blockchain is updated! Try again later!"
+
 		main_menu()
 
 	def exit_app():

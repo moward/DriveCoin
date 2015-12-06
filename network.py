@@ -12,6 +12,8 @@ import time
 SEED_PEER = '127.0.0.1'
 DRIVECOIN_PORT = 8123
 global_blockchain = None
+global_mining = False
+global_coinbase_address = ''
 
 class DriveCoinServerProtocol(protocol.Protocol):
 	'Manages DriveCoin incoming requests from peers'
@@ -103,3 +105,12 @@ class DriveCoinNetwork:
 	def set_blockchain(self, blockchain):
 		global global_blockchain
 		global_blockchain = blockchain
+
+	def set_mining(self, mining):
+		global global_mining
+		global_mining = True
+	
+	def set_coinbase_address(self, coinbase_address):
+		global global_coinbase_address
+		global_coinbase_address = coinbase_address
+
