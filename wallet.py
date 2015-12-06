@@ -49,9 +49,13 @@ def interactive_wallet():
 		main_menu()
 
 	def check_balance():
+		if blockchain.verified:
+			pass
 		main_menu()
 
 	def send_money():
+		if blockchain.verified:
+			pass
 		main_menu()
 
 	def exit_app():
