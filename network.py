@@ -8,9 +8,11 @@ import sys
 import signal
 from blockchain import Blockchain
 import time
+import pickle
 
 SEED_PEER = '127.0.0.1'
 DRIVECOIN_PORT = 8123
+
 global_blockchain = None
 global_mining = False
 global_coinbase_address = ''
@@ -39,6 +41,10 @@ class DriveCoinServerProtocol(protocol.Protocol):
 	def do_num_blocks(self):
 		self.transport.write(str(global_blockchain.get_last_block().block_number)+'\n')
 		self.transport.write('end-num_blocks')
+
+	def do_head_block(self):
+		self.transport.write(pickle.dumps(global_blockchain.get_head_block())+'\n')
+		self.transport.write('end-head_block')
 
 @Singleton
 class DriveCoinClient():

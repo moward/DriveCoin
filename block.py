@@ -13,7 +13,8 @@ class Block:
 			'merkle_tree_path' : ''
 		}
 
-	def addNextBlock(self, block):
+	def add_next_block(self, block):
+		block.next_block = None
 		self.next_block.previous_block = self
 		self.next_block = block
 		self.next_block.block_number = self.block_number+1
