@@ -5,6 +5,8 @@ import network
 from block import Block
 from balance_manager import BalanceManager
 
+MINER_REWARD = 1*(10**9)
+
 class Blockchain:
 	'A class representing the Blockchain'
 
@@ -42,7 +44,7 @@ class Blockchain:
 				self.balances.add_to_address(transaction.sender, -1*transaction.amount)
 				self.balances.add_to_address(transaction.recipient, transaction.amount)
 			# Reward the miner with one DriveCoin
-			self.balances.add_to_address(block.block_information['coinbase_address'], 1*(10**9))
+			self.balances.add_to_address(block.block_information['coinbase_address'], MINER_REWARD)
 			block = block.next_block
 
 	def update_blockchain(self):
@@ -67,7 +69,7 @@ class Blockchain:
 				for transaction in transactions:
 					new_balances.add_to_address(transaction.sender, -1*transaction.amount)
 					new_balances.add_to_address(transaction.recipient, transaction.amount)
-				new_balances.add_to_address(block.block_information['coinbase_address'], 1*(10**9))
+				new_balances.add_to_address(block.block_information['coinbase_address'], MINER_REWARD)
 
 				block = block.next_block
 
