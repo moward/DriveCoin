@@ -30,7 +30,9 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       self.path = '/beacon_files' + self.path
       return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
-Handler = MyRequestHandler
-server = SocketServer.TCPServer(('0.0.0.0', 8080), Handler)
+if __name__ == "__main__":
 
-server.serve_forever()
+  Handler = MyRequestHandler
+  server = SocketServer.TCPServer(('0.0.0.0', 8080), Handler)
+
+  server.serve_forever()

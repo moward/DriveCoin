@@ -1,6 +1,5 @@
 import mmap
 import struct
-from Crypto.Random import random
 from Crypto.Hash.SHA256 import SHA256Hash
 from Utils import *
 
@@ -13,9 +12,6 @@ MAGIC_VALUE = '\x99' * 32
 
 # This class is used for hashing throughout
 hash = SHA256Hash()
-
-def randomString(n):
-  return ''.join([chr(random.randint(0, 255)) for _ in range(0, n)])
 
 # From a root value and a binary path down the tree, give the leaf value
 # Can be used for verification
@@ -126,6 +122,50 @@ class SolutionSet:
       else:
         raise ValueError('Node value already exists')
 
+  '''
+  Looks up in the binary tree to find a node closest to the target
+  Returns the closest Node's
+    0. Value (binary string)
+    1. Merkle Tree Root (binary string)
+    2. Binary Merkle Path (number)
+    3. Distance to the target (binary string)
+  in a list.
+  '''
+  def lookup(self, target):
+    curr = lastLeftParent = lastRightParent = self.getRoot()
+    while True:
+      if curr.getValue() == target:
+        # copy list and add distance
+        return curr.values[0:3] + (['\x00'] * 32)
+      elif curr.getValue() < target:
+        # descend right
+        next = curr.getRightChild()
+        if next == None:
+          # reached leaf
+          parentDistance = binaryDistance(target, curr.getValue())
+          lastRightParentDistance = binaryDistance(target, lastRightParent.getValue())
+          if parentDistance < lastRightParentDistance:
+            return curr.values[0:3] + [parentDistance]
+          else:
+            return lastRightParent.values[0:3] + [lastRightParentDistance]
+        else:
+          lastLeftParent = curr
+          curr = next
+      else:
+        # descend left
+        next = curr.getLeftChild()
+        if next == None:
+          # reached leaf
+          parentDistance = binaryDistance(target, curr.getValue())
+          lastLeftParentDistance = binaryDistance(target, lastLeftParent.getValue())
+          if parentDistance < lastLeftParentDistance:
+            return curr.values[0:3] + [parentDistance]
+          else:
+            return lastLeftParent.values[0:3] + [lastLeftParentDistance]
+        else:
+          lastRightParent = curr
+          curr = next
+
   def _addTree(self, root, bottomRow):
     assert len(bottomRow) == 2 ** N
     currCount = self.getNodeCount()
@@ -191,3 +231,33 @@ def generateFile(filename, size):
   solnSet = SolutionSet(filename)
   solnSet.fillFile()
   return solnSet
+
+'''
+Takes in two 32-Byte binary strings and returns the numeric difference
+'''
+def binaryDistance(x, y):
+  assert len(x) == 32
+  assert len(y) == 32
+
+  # guarantee x is larger than or equal to y
+  if x < y:
+    temp = x
+    x = y
+    y = temp
+
+  xs = map(ord, list(x))
+  ys = map(ord, list(y))
+  out = [0] * 32
+  borrows = [0] * 32
+  for i in reversed(range(0,32)):
+    colDiff = xs[i] - borrows[i] - ys[i]
+    if colDiff < 0:
+      # need to borrow
+      assert i != 0 # should be true from x < y check above
+      borrows[i - 1] = 1
+      out[i] = colDiff + 256
+    else:
+      out[i] = colDiff
+
+  # output binary-string distance
+  return ''.join(map(chr, out))
