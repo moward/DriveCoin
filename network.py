@@ -28,7 +28,13 @@ class DriveCoinServerProtocol(protocol.Protocol):
 	def dataReceived(self, data):
 		# Strip new lines
 		data=data.strip()
-		getattr(self, 'do_'+data, self.do_nop)()
+		split_data = data.split('::')
+		func = split_data[0]
+		if len(split_data) > 1:
+			values = pickle.loads(split_data[1].decode('hex'))
+		else:
+			values = []
+		getattr(self, 'do_'+func, self.do_nop)(*values)
 
 	def do_nop(self):
 		pass
@@ -45,6 +51,15 @@ class DriveCoinServerProtocol(protocol.Protocol):
 	def do_head_block(self):
 		self.transport.write(pickle.dumps(global_blockchain.get_head_block())+'\n')
 		self.transport.write('end-head_block')
+
+	def do_transaction(self, transaction):
+		if transaction.transaction_id not in global_blockchain.transaction_set:
+			pending_transactions = global_blockchain.store['pending_transactions']
+			if transaction.verify(global_blockchain.balances):
+				pending_transactions.add(transaction)
+			global_blockchain.store['pending_transactions'] = pending_transactions
+		self.transport.write('end-transaction')
+
 
 @Singleton
 class DriveCoinClient():
@@ -84,7 +99,16 @@ class DriveCoinClient():
 				error = True
 		if error:
 			raise RuntimeError
-		return self.telnet_read_until('end-'+command)
+		split_data = command.split('::')
+		func = split_data[0]
+		return self.telnet_read_until('end-'+func)
+
+	def telnet_broadcast(self, msg, args):
+		for peer in self.peers:
+			self.tn.close()
+			self.tn = telnetlib.Telnet(peer, DRIVECOIN_PORT)
+			self.telnet_peers_command(msg+'::'+pickle.dumps(args).encode('hex'), False)
+
 
 	def parse_telnet_response(self,response):
 		return map(lambda x: x.strip(), response.split('\n'))

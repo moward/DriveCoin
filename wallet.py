@@ -33,7 +33,7 @@ def interactive_wallet():
 		store['wallets'] = store['wallets']+[(key.n, key.e, key.d, key.p, key.q)]
 		store['current_wallet'] = store['wallets'][-1]
 		print "Created! Your address is:"
-		print Utils.encode_address(key.n)[:-1]
+		print Utils.encode_address(key.n)
 		main_menu()
 
 	def select_wallet():
@@ -72,6 +72,7 @@ def interactive_wallet():
 			transaction = Transaction(sender, recipient, amount)
 			transaction.sign(store['current_wallet'])
 			if transaction.verify(blockchain.get_balances()):
+				client.telnet_broadcast('transaction', [transaction])
 				print "Success, the money was sent! There will be a delay in confirmation until the transaction is added to the blockchain by a miner."
 			else:
 				print "Your balances are not enough to cover this transaction!"

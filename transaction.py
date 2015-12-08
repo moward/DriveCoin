@@ -24,6 +24,12 @@ class Transaction:
 	def hash(self):
 		return SHA.new(str(self.transaction_id)+","+str(self.sender)+","+str(self.recipient)+","+str(self.amount))
 
+	def __hash__(self):
+		return Utils.string_to_long(self.hash().hexdigest())
+
+	def __eq__(self, other):
+		return self.__hash__() == other.__hash__()
+
 	def verify(self, balances, mutate_balances = False):
 		signature_check = self.generate_key(Utils.decode_address(self.sender)).verify(self.hash(), self.signature)
 		balance_check = balances.lookup_address(self.sender) >= self.amount

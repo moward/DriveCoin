@@ -55,7 +55,7 @@ def parse_mpi(s,index):
     return z, index+4+length
 
 def encode_address(n):
-	return long_to_string(n).upper()
+	return str(long_to_string(n).upper())[:-1]
 
 def decode_address(address):
 	n = string_to_long(address)

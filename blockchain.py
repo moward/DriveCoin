@@ -16,10 +16,12 @@ class Blockchain:
 			# Make the head block the genesis block
 			self.store['head_block'] = Block()
 			self.store['last_block'] = self.store['head_block']
+			self.store['pending_transactions'] = set()
 
 		self.client = network.DriveCoinClient.Instance()
 		self.verified = False
 		self.balances = BalanceManager()
+		self.transaction_set = set()
 
 		def updateBlockchainNextTick():
 			self.update_blockchain()
@@ -38,13 +40,9 @@ class Blockchain:
 	def calculate_balances(self):
 		block = self.store['head_block']
 		self.balances = BalanceManager()
+		self.transaction_set = set()
 		while block != None:
-			transactions = block.block_information['transaction_list']
-			for transaction in transactions:
-				self.balances.add_to_address(transaction.sender, -1*transaction.amount)
-				self.balances.add_to_address(transaction.recipient, transaction.amount)
-			# Reward the miner with one DriveCoin
-			self.balances.add_to_address(block.block_information['coinbase_address'], MINER_REWARD)
+			self.update_with_block(block, self.balances, self.transaction_set)
 			block = block.next_block
 
 	def update_blockchain(self):
@@ -53,6 +51,8 @@ class Blockchain:
 			head_block = pickle.loads(self.client.telnet_peers_command('head_block', False))
 			new_head_block = Block()
 			new_balances = BalanceManager()
+			new_transaction_set = set()
+			self.update_with_block(head_block, new_balances, new_transaction_set)
 			block = head_block.next_block
 			last_block = new_head_block
 			error = False
@@ -63,27 +63,30 @@ class Blockchain:
 				if not last_block.verify(new_balances):
 					error = True
 					break
-
-				# Update Balances
-				transactions = block.block_information['transaction_list']
-				for transaction in transactions:
-					new_balances.add_to_address(transaction.sender, -1*transaction.amount)
-					new_balances.add_to_address(transaction.recipient, transaction.amount)
-				new_balances.add_to_address(block.block_information['coinbase_address'], MINER_REWARD)
-
+				self.update_with_block(block, new_balances, new_transaction_set)
 				block = block.next_block
 
 			# If we didn't encounter a verification error with the new blockchain and it is longer 
-			# replace the current chain with the longer chain and replace balances with the newly
-			# calculated balances
+			# replace the current chain with the longer chain, replace balances with the newly
+			# calculated balances, and replace the transaction set with the new transaction set
 			if not error and last_block.block_number > self.get_last_block().block_number:
 				self.store['head_block'] = new_head_block
 				self.store['last_block'] = last_block
 				self.balances = new_balances
+				self.transaction_set = new_transaction_set
 			self.verified = True
 		else:
 			self.calculate_balances()
 			self.verified = True
+
+	def update_with_block(self, block, new_balances, transaction_set):
+		transactions = block.block_information['transaction_list']
+		for transaction in transactions:
+			new_balances.add_to_address(transaction.sender, -1*transaction.amount)
+			new_balances.add_to_address(transaction.recipient, transaction.amount)
+			transaction_set.add(transaction.transaction_id)
+		# Reward the miner with one DriveCoin
+		new_balances.add_to_address(block.block_information['coinbase_address'], MINER_REWARD)
 
 		# Attempt to update the blockchain every minute
 		t = threading.Timer(60.0, self.update_blockchain)
