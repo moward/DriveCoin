@@ -1,0 +1,17 @@
+Installation:
+DriveCoin uses PyCrypto and Twisted:
+pip install pycrypto
+pip install twisted
+
+
+DriveCoin requires a beacon of randomness to operate, in reality this may be derived from financial markets. We have simulated this with a locally running web server.
+
+Before running DriveCoin you must run the beacon service in the background:
+python beacon.py
+
+
+To run the wallet app (create wallets, send money) run:
+python wallet.py
+
+To run a miner to add pending transactions to the blockchain:
+python miner.py

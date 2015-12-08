@@ -1,4 +1,4 @@
 *.pyc
 pycrypto-*
-wallet.store
-blockchain.store
+tree.txt
+beacon_files/*

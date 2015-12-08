@@ -15,7 +15,6 @@ class Blockchain:
 		if len(self.store) == 0:
 			# Make the head block the genesis block
 			self.store['head_block'] = Block()
-			self.store['last_block'] = self.store['head_block']
 			self.store['pending_transactions'] = set()
 
 		self.client = network.DriveCoinClient.Instance()
@@ -32,10 +31,18 @@ class Blockchain:
 		return self.store['head_block']
 
 	def get_last_block(self):
-		return self.store['last_block']
+		block = self.get_head_block()
+		last_block = block
+		while block != None:
+			last_block = block
+			block = block.next_block
+		return last_block
 
 	def get_balances(self):
 		return self.balances
+
+	def add_block(self, block):
+		self.get_last_block().add_next_block(block)
 
 	def calculate_balances(self):
 		block = self.store['head_block']
@@ -58,9 +65,10 @@ class Blockchain:
 			error = False
 			while block != None:
 				# Add the next block to the new chain and verify it
-				new_head_block.add_next_block(block)
+				last_block.add_next_block(block)
+				previous_block = last_block
 				last_block = block
-				if not last_block.verify(new_balances):
+				if not last_block.verify(previous_block, new_balances, new_transaction_set):
 					error = True
 					break
 				self.update_with_block(block, new_balances, new_transaction_set)
@@ -71,7 +79,6 @@ class Blockchain:
 			# calculated balances, and replace the transaction set with the new transaction set
 			if not error and last_block.block_number > self.get_last_block().block_number:
 				self.store['head_block'] = new_head_block
-				self.store['last_block'] = last_block
 				self.balances = new_balances
 				self.transaction_set = new_transaction_set
 			self.verified = True
