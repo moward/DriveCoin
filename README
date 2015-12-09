@@ -15,3 +15,5 @@ python wallet.py
 
 To run a miner to add pending transactions to the blockchain:
 python miner.py
+
+Note: The wallet and miner cannot be run at the same time on the same computer as they both serve on TCP port 8124.
