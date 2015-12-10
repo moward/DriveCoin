@@ -6,7 +6,7 @@ from Utils import *
 # Height of Merkle Tree
 N = 16
 
-# This value is xored with a merkle node's value to generate the generate
+# This value is xored with a hash node's value to generate the generate
 # the hash input for its left child
 MAGIC_VALUE = '\x99' * 32
 
@@ -32,7 +32,7 @@ class BSTNode:
   Index | Description             | Byte Length
   ----------------------------------------------
   0     | Node Value              | 32 B
-  1     | Merkle Tree Root        | 32 B
+  1     | Hash Tree Root          | 32 B
   2     | Binary Merkle Path      | 2 B
   3     | L Child Location        | 8 B
   4     | R Child Location        | 8 B
