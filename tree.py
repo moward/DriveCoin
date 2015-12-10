@@ -3,7 +3,7 @@ import struct
 from Crypto.Hash.SHA256 import SHA256Hash
 from Utils import *
 
-# Height of Merkle Tree
+# Height of Hash Tree
 N = 16
 
 # This value is xored with a hash node's value to generate the generate
@@ -33,7 +33,7 @@ class BSTNode:
   ----------------------------------------------
   0     | Node Value              | 32 B
   1     | Hash Tree Root          | 32 B
-  2     | Binary Merkle Path      | 2 B
+  2     | Binary Tree Path      | 2 B
   3     | L Child Location        | 8 B
   4     | R Child Location        | 8 B
   '''
@@ -126,8 +126,8 @@ class SolutionSet:
   Looks up in the binary tree to find a node closest to the target
   Returns the closest Node's
     0. Value (binary string)
-    1. Merkle Tree Root (binary string)
-    2. Binary Merkle Path (number)
+    1. Hash Tree Root (binary string)
+    2. Binary Hash Path (number)
     3. Distance to the target (binary string)
   in a list.
   '''
@@ -205,11 +205,11 @@ class SolutionSet:
     
     print('Done: Added %d trees' % newTrees)
 
-  # Generate our Merkle tree
+  # Generate our Hash tree
   def generateTree(self):
     bottomRow = []
 
-    # Recurse down tree to efficiently find Merkle leaves
+    # Recurse down tree to efficiently find leaves
     def descend(nodeValue, depth):
       if depth == N:
         bottomRow.append(nodeValue)
